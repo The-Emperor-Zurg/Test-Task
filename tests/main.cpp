@@ -1,3 +1,6 @@
-//
-// Created by nazar on 28.07.2025.
-//
+#include "unit_tests.h"
+
+
+int main() {
+    runAllTests();
+}

@@ -1,6 +1,7 @@
+#include <iomanip>
+
 #include "logger.h"
 
-#include <iomanip>
 
 namespace MyLogger {
 

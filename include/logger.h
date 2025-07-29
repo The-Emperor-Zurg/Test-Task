@@ -14,6 +14,7 @@
     #define LOGGER_API
 #endif
 
+
 namespace MyLogger {
     enum class LogLevel {
         INFO = 0,

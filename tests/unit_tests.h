@@ -2,7 +2,9 @@
 
 #include <string>
 
-void runAllUnitTests(const std::string& testName, bool (*testFunction)(), int& totalTests, int& passedTests);
+
+void runTest(const std::string& testName, bool (*testFunction)(), int& totalTests, int& passedTests);
+int runAllTests();
 
 bool testLoggerInitialization();
 bool testSetLogLevel();

@@ -21,6 +21,35 @@ void runAllUnitTests(const std::string& testName, bool (*testFunction)(), int& t
     }
 }
 
+int runAllTests() {
+    std::cout << "MyLogger test application\n";
+
+    int totalTests = 0;
+    int passedTests = 0;
+
+    // Запускаем тесты
+    runTest("Logger Initialization", testLoggerInitialization, totalTests, passedTests);
+    runTest("Set Log Level", testSetLogLevel, totalTests, passedTests);
+    runTest("Log Message", testLogMessage, totalTests, passedTests);
+    runTest("Log Level Filtering", testLogLevelFilter, totalTests, passedTests);
+    runTest("Error Handling", testErrorHandling, totalTests, passedTests);
+
+    // Выводим результат
+    std::cout << "\n ---Test Results ---\n";
+    std::cout << "Total tests: " << totalTests << "\n";
+    std::cout << "Passed: " << passedTests << "\n";
+    std::cout << "Failed: " << (totalTests - passedTests) << "\n";
+
+    if (passedTests == totalTests) {
+        std::cout << "All tests passed! Congratulations! \n";
+        return 0;
+    }
+
+    std::cout << "Some tests failed! \n";
+    return 1;
+}
+
+
 bool testLoggerInitialization() {
     MyLogger::Logger logger;
 
