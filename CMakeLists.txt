@@ -22,7 +22,7 @@ target_include_directories(mylogger_shared PUBLIC include)
 set_target_properties(mylogger_shared PROPERTIES OUTPUT_NAME "mylogger")
 
 if(WIN32)
-    target_compile_definitions(mylogger_shared PRIVATE MYLOGGER_EXPORTS)
+    target_compile_definitions(mylogger_shared PRIVATE MYLOGGER_EXPORTS MYLOGGER_SHARED)
 endif()
 
 # Tests

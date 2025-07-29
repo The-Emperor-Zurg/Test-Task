@@ -1,17 +1,17 @@
 #include <iostream>
+#include <fstream>
 
 #include "unit_tests.h"
+#include <filesystem>
 
-#include <bits/fs_dir.h>
-#include <bits/fs_ops.h>
 
 #include "logger.h"
 
 
-void runAllUnitTests(const std::string& testName, bool (*testFunction)(), int& totalTests, int& passedTests) {
+void runTest(const std::string& testName, bool (*testFunction)(), int& totalTests, int& passedTests) {
     totalTests++;
 
-    std::cout << "Running test:" << testName;
+    std::cout << "Running test: " << testName << " - ";
 
     if (testFunction()) {
         std::cout << "PASSED\n";
@@ -51,25 +51,27 @@ int runAllTests() {
 
 
 bool testLoggerInitialization() {
-    MyLogger::Logger logger;
+    {
+        MyLogger::Logger logger;
 
-    if (logger.isInitialized()) {
-        return false; // Не должен быть инициализирован
-    }
+        if (logger.isInitialized()) {
+            return false; // Не должен быть инициализирован
+        }
 
-    // Тест на успешную инициализацию
-    MyLogger::LogResult result = logger.init("test_init.log", MyLogger::LogLevel::INFO);
-    if (result != MyLogger::LogResult::SUCCESS) {
-        return false;
-    }
+        // Тест на успешную инициализацию
+        MyLogger::LogResult result = logger.init("test_init.log", MyLogger::LogLevel::INFO);
+        if (result != MyLogger::LogResult::SUCCESS) {
+            return false;
+        }
 
-    if (!logger.isInitialized()) {
-        return false;
-    }
+        if (!logger.isInitialized()) {
+            return false;
+        }
 
-    if (logger.getLogLevel() != MyLogger::LogLevel::INFO) {
-        return false;
-    }
+        if (logger.getLogLevel() != MyLogger::LogLevel::INFO) {
+            return false;
+        }
+    } // Делаем в скопе, чтобы логгер уничтожался и файл закрывался
 
     // Удаляем созданный файл
     std::filesystem::remove("test_init.log");
@@ -78,39 +80,39 @@ bool testLoggerInitialization() {
 }
 
 bool testSetLogLevel() {
-    MyLogger::Logger logger;
-    logger.init("test_level.log", MyLogger::LogLevel::INFO);
+    {
+        MyLogger::Logger logger;
+        logger.init("test_level.log", MyLogger::LogLevel::INFO);
 
-    // Тест смены дефолтного уровня
-    logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
-    if (logger.getLogLevel() != MyLogger::LogLevel::TOP_SECRET_INFO) {
-        std::filesystem::remove("test_level.log");
-        return false;
-    }
+        // Тест смены дефолтного уровня
+        logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
+        if (logger.getLogLevel() != MyLogger::LogLevel::TOP_SECRET_INFO) {
+            return false;
+        }
 
-    logger.setLogLevel(MyLogger::LogLevel::SECRET_INFO);
-    if (logger.getLogLevel() != MyLogger::LogLevel::SECRET_INFO) {
-        std::filesystem::remove("test_level.log");
-        return false;
-    }
+        logger.setLogLevel(MyLogger::LogLevel::SECRET_INFO);
+        if (logger.getLogLevel() != MyLogger::LogLevel::SECRET_INFO) {
+            return false;
+        }
+    } // Делаем в скопе, чтобы логгер уничтожался и файл закрывался
 
     // Удаляем созданный файл
     std::filesystem::remove("test_level.log");
 
     return true;
-
 }
 
 bool testLogMessage() {
-    MyLogger::Logger logger;
-    logger.init("test_message.log", MyLogger::LogLevel::INFO);
+    {
+        MyLogger::Logger logger;
+        logger.init("test_message.log", MyLogger::LogLevel::INFO);
 
-    // Запишем тестовое сообщение
-    MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
-    if (result != MyLogger::LogResult::SUCCESS) {
-        std::filesystem::remove("test_message.log");
-        return false;
-    }
+        // Запишем тестовое сообщение
+        MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
+        if (result != MyLogger::LogResult::SUCCESS) {
+            return false;
+        }
+    } // Делаем в скопе, чтобы логгер уничтожался и файл закрывался
 
     // Проверим содержимое файла
     std::ifstream file("test_message.log");
@@ -125,18 +127,21 @@ bool testLogMessage() {
     bool containsMessage = line.find("Test message") != std::string::npos;
     bool containsLevel = line.find("[INFO]") != std::string::npos;
 
+    // Удаляем созданный файл
     std::filesystem::remove("test_message.log");
 
     return containsMessage && containsLevel;
 }
 
 bool testLogLevelFilter() {
-    MyLogger::Logger logger;
-    logger.init("test_filtering.log", MyLogger::LogLevel::SECRET_INFO);
+    {
+        MyLogger::Logger logger;
+        logger.init("test_filtering.log", MyLogger::LogLevel::SECRET_INFO);
 
-    logger.log("Info message", MyLogger::LogLevel::INFO);
-    logger.log("Secret message", MyLogger::LogLevel::SECRET_INFO);
-    logger.log("Top secret message", MyLogger::LogLevel::TOP_SECRET_INFO);
+        logger.log("Info message", MyLogger::LogLevel::INFO);
+        logger.log("Secret message", MyLogger::LogLevel::SECRET_INFO);
+        logger.log("Top secret message", MyLogger::LogLevel::TOP_SECRET_INFO);
+    } // Делаем в скопе, чтобы логгер уничтожался и файл закрывался
 
     std::ifstream file("test_filtering.log");
     if (!file.is_open()) {
@@ -148,29 +153,33 @@ bool testLogLevelFilter() {
 
     bool infoFiltered = content.find("Info message") == std::string::npos;
     bool secretFiltered = content.find("Secret message") != std::string::npos;
-    bool topSecretFiltered = content.find("Top Secret message") != std::string::npos;
+    bool topSecretFiltered = content.find("Top secret message") != std::string::npos;
 
+    // Удаляем созданный файл
     std::filesystem::remove("test_filtering.log");
 
     return infoFiltered && secretFiltered && topSecretFiltered;
-
 }
 
 bool testErrorHandling() {
-    MyLogger::Logger logger;
+    {
+        MyLogger::Logger logger;
 
-    // Запись сообщения без инициализированного логгера
-    MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
-    if (result != MyLogger::LogResult::FILE_OPEN_ERROR) {
-        return false;
-    }
+        // Запись сообщения без инициализированного логгера
+        MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
+        if (result != MyLogger::LogResult::FILE_OPEN_ERROR) {
+            return false;
+        }
 
-    // Невалидный уровень сообщения
-    result = logger.init("test_error.log", static_cast<MyLogger::LogLevel>(777));
-    if (result != MyLogger::LogResult::INVALID_LEVEL) {
-        return false;
-    }
+        // Невалидный уровень сообщения
+        result = logger.init("test_error.log", static_cast<MyLogger::LogLevel>(777));
+        if (result != MyLogger::LogResult::INVALID_LEVEL) {
+            return false;
+        }
+    } // Делаем в скопе, чтобы логгер уничтожался и файл закрывался
 
+    // Удаляем созданный файл
     std::filesystem::remove("test_error.log");
+    
     return true;
 }

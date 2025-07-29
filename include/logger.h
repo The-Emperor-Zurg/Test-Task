@@ -5,13 +5,17 @@
 #include <mutex>
 
 #ifdef WIN32
-    #ifdef MYLOGGER_EXPORTS
-        #define MYLOGGER_API __declspec(dllexport)
+    #ifdef MYLOGGER_SHARED
+        #ifdef MYLOGGER_EXPORTS
+            #define MYLOGGER_API __declspec(dllexport)
+        #else
+            #define MYLOGGER_API __declspec(dllimport)
+        #endif
     #else
-        #define LOGGER_API __declspec(dllimport)
+        #define MYLOGGER_API
     #endif
 #else
-    #define LOGGER_API
+    #define MYLOGGER_API
 #endif
 
 
