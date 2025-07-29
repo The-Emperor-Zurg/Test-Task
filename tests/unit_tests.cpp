@@ -1,3 +1,147 @@
-//
-// Created by nazar on 28.07.2025.
-//
+#include <iostream>
+
+#include "unit_tests.h"
+
+#include <bits/fs_dir.h>
+#include <bits/fs_ops.h>
+
+#include "logger.h"
+
+
+void runAllUnitTests(const std::string& testName, bool (*testFunction)(), int& totalTests, int& passedTests) {
+    totalTests++;
+
+    std::cout << "Running test:" << testName;
+
+    if (testFunction()) {
+        std::cout << "PASSED\n";
+        passedTests++;
+    } else {
+        std::cout << "FAILED\n";
+    }
+}
+
+bool testLoggerInitialization() {
+    MyLogger::Logger logger;
+
+    if (logger.isInitialized()) {
+        return false; // Не должен быть инициализирован
+    }
+
+    // Тест на успешную инициализацию
+    MyLogger::LogResult result = logger.init("test_init.log", MyLogger::LogLevel::INFO);
+    if (result != MyLogger::LogResult::SUCCESS) {
+        return false;
+    }
+
+    if (!logger.isInitialized()) {
+        return false;
+    }
+
+    if (logger.getLogLevel() != MyLogger::LogLevel::INFO) {
+        return false;
+    }
+
+    // Удаляем созданный файл
+    std::filesystem::remove("test_init.log");
+
+    return true;
+}
+
+bool testSetLogLevel() {
+    MyLogger::Logger logger;
+    logger.init("test_level.log", MyLogger::LogLevel::INFO);
+
+    // Тест смены дефолтного уровня
+    logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
+    if (logger.getLogLevel() != MyLogger::LogLevel::TOP_SECRET_INFO) {
+        std::filesystem::remove("test_level.log");
+        return false;
+    }
+
+    logger.setLogLevel(MyLogger::LogLevel::SECRET_INFO);
+    if (logger.getLogLevel() != MyLogger::LogLevel::SECRET_INFO) {
+        std::filesystem::remove("test_level.log");
+        return false;
+    }
+
+    // Удаляем созданный файл
+    std::filesystem::remove("test_level.log");
+
+    return true;
+
+}
+
+bool testLogMessage() {
+    MyLogger::Logger logger;
+    logger.init("test_message.log", MyLogger::LogLevel::INFO);
+
+    // Запишем тестовое сообщение
+    MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
+    if (result != MyLogger::LogResult::SUCCESS) {
+        std::filesystem::remove("test_message.log");
+        return false;
+    }
+
+    // Проверим содержимое файла
+    std::ifstream file("test_message.log");
+    if (!file.is_open()) {
+        return false;
+    }
+
+    std::string line;
+    std::getline(file, line);
+    file.close();
+
+    bool containsMessage = line.find("Test message") != std::string::npos;
+    bool containsLevel = line.find("[INFO]") != std::string::npos;
+
+    std::filesystem::remove("test_message.log");
+
+    return containsMessage && containsLevel;
+}
+
+bool testLogLevelFilter() {
+    MyLogger::Logger logger;
+    logger.init("test_filtering.log", MyLogger::LogLevel::SECRET_INFO);
+
+    logger.log("Info message", MyLogger::LogLevel::INFO);
+    logger.log("Secret message", MyLogger::LogLevel::SECRET_INFO);
+    logger.log("Top secret message", MyLogger::LogLevel::TOP_SECRET_INFO);
+
+    std::ifstream file("test_filtering.log");
+    if (!file.is_open()) {
+        return false;
+    }
+
+    std::string content((std::istreambuf_iterator(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    bool infoFiltered = content.find("Info message") == std::string::npos;
+    bool secretFiltered = content.find("Secret message") != std::string::npos;
+    bool topSecretFiltered = content.find("Top Secret message") != std::string::npos;
+
+    std::filesystem::remove("test_filtering.log");
+
+    return infoFiltered && secretFiltered && topSecretFiltered;
+
+}
+
+bool testErrorHandling() {
+    MyLogger::Logger logger;
+
+    // Запись сообщения без инициализированного логгера
+    MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
+    if (result != MyLogger::LogResult::FILE_OPEN_ERROR) {
+        return false;
+    }
+
+    // Невалидный уровень сообщения
+    result = logger.init("test_error.log", static_cast<MyLogger::LogLevel>(777));
+    if (result != MyLogger::LogResult::INVALID_LEVEL) {
+        return false;
+    }
+
+    std::filesystem::remove("test_error.log");
+    return true;
+}

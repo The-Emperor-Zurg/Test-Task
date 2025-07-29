@@ -14,7 +14,7 @@
     #define LOGGER_API
 #endif
 
-namespace MuLogger {
+namespace MyLogger {
     enum class LogLevel {
         INFO = 0,
         SECRET_INFO = 1,

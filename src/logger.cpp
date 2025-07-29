@@ -2,7 +2,7 @@
 
 #include <iomanip>
 
-namespace MuLogger {
+namespace MyLogger {
 
     Logger::Logger()
         : defaultMessageLevel_(LogLevel::INFO), initialized_(false)
