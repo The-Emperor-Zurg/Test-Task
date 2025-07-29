@@ -25,7 +25,7 @@ namespace MuLogger {
         SUCCESS = 0,
         FILE_OPEN_ERROR = 1,
         WRITE_ERROR = 2,
-        INVALID_ERROR = 3
+        INVALID_LEVEL = 3
     };
 
     class MYLOGGER_API Logger {
@@ -47,9 +47,9 @@ namespace MuLogger {
         std::mutex mutex_;
         bool initialized_;
 
-        std::string getCurrentTime() const;
-        std::string logLevelToString(LogLevel level) const;
+        static std::string getCurrentTime() ;
+        static std::string logLevelToString(LogLevel level) ;
         bool shouldLog(LogLevel level) const;
-        bool isValidLogLevel(LogLevel level) const;
+        static bool isValidLogLevel(LogLevel level) ;
     };
 }
