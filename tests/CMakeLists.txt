@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 
-add_executable(tests main.cpp unit_tests.cpp)
+add_executable(tests main.cpp unit_tests.cpp unit_tests.h)
 
 # Include directories
 target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)

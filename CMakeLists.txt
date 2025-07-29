@@ -28,6 +28,6 @@ endif()
 # Tests
 option(BUILD_TESTS "Build tests" ON)
 
-if(BUILD_TEST_APP)
+if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
