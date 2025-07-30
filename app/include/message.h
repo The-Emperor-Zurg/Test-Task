@@ -1,8 +1,19 @@
-//
-// Created by nazar on 30.07.2025.
-//
+#pragma once
+#include "logger.h"
 
-#ifndef MESSAGE_H
-#define MESSAGE_H
 
-#endif //MESSAGE_H
+namespace LoggerApp {
+    struct Message {
+        std::string text;
+        MyLogger::LogLevel level;
+        bool isExitMessage;
+
+        Message(const std::string& text, MyLogger::LogLevel level, bool isExitMessage = false)
+            : text(text), level(level), isExitMessage(isExitMessage)
+        {}
+
+        static Message createExitMessage() {
+            return Message("", MyLogger::LogLevel::INFO, true);
+        }
+    };
+}

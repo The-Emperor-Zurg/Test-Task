@@ -1,8 +1,15 @@
-//
-// Created by nazar on 30.07.2025.
-//
+#pragma once
 
-#ifndef IINPUT_HANDLER_H
-#define IINPUT_HANDLER_H
+#include <optional>
 
-#endif //IINPUT_HANDLER_H
+#include "../message.h"
+
+
+namespace LoggerApp {
+    class IInputHandler {
+    public:
+        virtual ~IInputHandler() = default;
+
+        [[nodiscard]] virtual std::optional<Message> parseInput(const std::string& input, MyLogger::LogLevel defaultLevel) const = 0;
+    };
+}
