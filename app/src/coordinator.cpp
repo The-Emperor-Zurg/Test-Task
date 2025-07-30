@@ -56,10 +56,10 @@ namespace LoggerApp {
         return true;
     }
 
-    bool Coordinator::run() {
+    void Coordinator::run() {
         if (!isInitialized_) {
             std::cerr << "Coordinator is not initialized!\n";
-            return false;
+            return;
         }
 
         printUsage();
@@ -77,7 +77,7 @@ namespace LoggerApp {
                 continue;
             }
 
-            Message message = messageOpt.value();
+            const Message& message = messageOpt.value();
 
             if (message.isExitMessage) {
                 logWorker_->pushMessage(message);
@@ -117,7 +117,7 @@ namespace LoggerApp {
 
         std::cout << '\n';
         std::cout << "Examples:\n";
-        std::cout << "Hello, world!";
+        std::cout << "Hello, world!\n";
         std::cout << "I'm Achilles, son of Peleus SECRET_INFO\n";
         std::cout << "I am Maximus Decius Meridius TOP_SECRET_INFO\n";
         std::cout << "Type 'exit', 'quit' or 'q' to terminate\n";

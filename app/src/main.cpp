@@ -10,8 +10,8 @@ void printUsage(const char* programName) {
     std::cout << "--- INFO < SECRET_INFO < TOP_SECRET_INFO\n";
     std::cout << "--- Default level is: INFO\n\n";
     std::cout << "Examples: \n";
-    std::cout << programName << "logger.log << \n";
-    std::cout << programName << "logger.log SECRET_INFO \n";
+    std::cout << programName << " logger.log \n";
+    std::cout << programName << " logger.log SECRET_INFO \n";
 }
 
 MyLogger::LogLevel parseLogLevel(const std::string& level) {

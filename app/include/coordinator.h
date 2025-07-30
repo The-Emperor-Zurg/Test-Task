@@ -15,7 +15,7 @@ namespace LoggerApp {
         ~Coordinator();
 
         bool init();
-        bool run();
+        void run();
         void shutdown();
 
     private:

@@ -2,6 +2,7 @@
 
 #include "interfaces/Iinput_handler.h"
 
+
 namespace LoggerApp {
     class InputHandler : public IInputHandler {
     public:
