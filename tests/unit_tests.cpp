@@ -33,12 +33,12 @@ int runAllTests() {
     runTest("Log Message", testLogMessage, totalTests, passedTests);
     runTest("Log Level Filtering", testLogLevelFilter, totalTests, passedTests);
     runTest("Error Handling", testErrorHandling, totalTests, passedTests);
+    runTest("Set Level NOT_INITIALIZED Test", testSetLogLevelNotInitialized, totalTests, passedTests);
     runTest("Socket Logger Connection error", testSocketLoggerConnectionError, totalTests, passedTests);
     runTest("Socket Logger Initialization", testSocketLoggerInitialization, totalTests, passedTests);
     runTest("Socket Logger Invalid Host", testSocketLoggerInvalidHost, totalTests, passedTests);
     runTest("Socket Logger Invalid Port", testSocketLoggerInvalidPort, totalTests, passedTests);
     runTest("Socket Logger Set Level (NOT_INITIALIZED)", testSocketLoggerSetLevel, totalTests, passedTests);
-    runTest("Set Level NOT_INITIALIZED Test", testSetLogLevelNotInitialized, totalTests, passedTests);
 
     // Выводим результат
     std::cout << "\n ---Test Results ---\n";
@@ -190,6 +190,24 @@ bool testErrorHandling() {
     return true;
 }
 
+bool testSetLogLevelNotInitialized() {
+    MyLogger::Logger logger;
+
+    // Тестируем setLogLevel на неинициализированном логгере
+    MyLogger::LogResult result = logger.setLogLevel(MyLogger::LogLevel::INFO);
+    if (result != MyLogger::LogResult::NOT_INITIALIZED) {
+        return false;
+    }
+
+    // Тестируем невалидный уровень
+    result = logger.setLogLevel(static_cast<MyLogger::LogLevel>(999));
+    if (result != MyLogger::LogResult::INVALID_LEVEL) {
+        return false;
+    }
+
+    return true;
+}
+
 bool testSocketLoggerConnectionError() {
     MyLogger::Logger logger;
 
@@ -260,24 +278,6 @@ bool testSocketLoggerSetLevel() {
 
     // Тестируем невалидный уровень на неинициализированном логгере
     result = logger.setLogLevel(static_cast<MyLogger::LogLevel>(777));
-    if (result != MyLogger::LogResult::INVALID_LEVEL) {
-        return false;
-    }
-
-    return true;
-}
-
-bool testSetLogLevelNotInitialized() {
-    MyLogger::Logger logger;
-
-    // Тестируем setLogLevel на неинициализированном логгере
-    MyLogger::LogResult result = logger.setLogLevel(MyLogger::LogLevel::INFO);
-    if (result != MyLogger::LogResult::NOT_INITIALIZED) {
-        return false;
-    }
-
-    // Тестируем невалидный уровень
-    result = logger.setLogLevel(static_cast<MyLogger::LogLevel>(999));
     if (result != MyLogger::LogResult::INVALID_LEVEL) {
         return false;
     }
