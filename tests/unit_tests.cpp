@@ -33,6 +33,11 @@ int runAllTests() {
     runTest("Log Message", testLogMessage, totalTests, passedTests);
     runTest("Log Level Filtering", testLogLevelFilter, totalTests, passedTests);
     runTest("Error Handling", testErrorHandling, totalTests, passedTests);
+    runTest("Socket Logger Connection error", testSocketLoggerConnectionError, totalTests, passedTests);
+    runTest("Socket Logger Initialization", testSocketLoggerInitialization, totalTests, passedTests);
+    runTest("Socket Logger Invalid Host", testSocketLoggerInvalidHost, totalTests, passedTests);
+    runTest("Socket Logger Invalid Port", testSocketLoggerInvalidPort, totalTests, passedTests);
+    runTest("Socket Logger Set Level", testSocketLoggerSetLevel, totalTests, passedTests);
 
     // Выводим результат
     std::cout << "\n ---Test Results ---\n";
@@ -182,4 +187,72 @@ bool testErrorHandling() {
     std::filesystem::remove("test_error.log");
     
     return true;
+}
+
+bool testSocketLoggerConnectionError() {
+    MyLogger::Logger logger;
+
+    MyLogger::LogResult result = logger.initSocket("0.0.0.0", 9999, MyLogger::LogLevel::INFO);
+
+    if (result != MyLogger::LogResult::SOCKET_CONNECTION_ERROR) {
+        return false;
+    }
+
+    if (logger.isInitialized()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool testSocketLoggerInitialization() {
+    MyLogger::Logger logger;
+
+    if (logger.isInitialized()) {
+        return false;
+    }
+
+    MyLogger::LogResult result = logger.initSocket("127.0.0.1", 9999, static_cast<MyLogger::LogLevel>(777));
+    if (result != MyLogger::LogResult::INVALID_LEVEL) {
+        return false;
+    }
+
+    if (logger.isInitialized()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool testSocketLoggerInvalidHost() {
+    MyLogger::Logger logger;
+
+    MyLogger::LogResult result = logger.initSocket("", 9999, MyLogger::LogLevel::INFO);
+    return result == MyLogger::LogResult::SOCKET_CONNECTION_ERROR && !logger.isInitialized();
+}
+
+bool testSocketLoggerInvalidPort() {
+    MyLogger::Logger logger;
+
+    MyLogger::LogResult result = logger.initSocket("127.0.0.1", -1, MyLogger::LogLevel::INFO);
+    return result == MyLogger::LogResult::SOCKET_CONNECTION_ERROR && !logger.isInitialized();
+}
+
+bool testSocketLoggerUninitialized() {
+    MyLogger::Logger logger;
+
+    MyLogger::LogResult result = logger.log("Test message", MyLogger::LogLevel::INFO);
+    return result == MyLogger::LogResult::FILE_OPEN_ERROR;
+}
+
+bool testSocketLoggerSetLevel() {
+    MyLogger::Logger logger;
+
+    MyLogger::LogResult result = logger.initSocket("127.0.0.1", 65432, MyLogger::LogLevel::INFO);
+    if (result != MyLogger::LogResult::SUCCESS) {
+        return false;
+    }
+
+    logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
+    return logger.getLogLevel() == MyLogger::LogLevel::TOP_SECRET_INFO;
 }

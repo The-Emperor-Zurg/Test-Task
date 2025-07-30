@@ -4,6 +4,9 @@
 
 #include "logger.h"
 
+#include "file_log_output.h"
+#include "socket_log_output.h"
+
 
 namespace MyLogger {
 
@@ -12,8 +15,8 @@ namespace MyLogger {
     {}
 
     Logger::~Logger() {
-        if (logFile_.is_open()) {
-            logFile_.close();
+        if (output_) {
+            output_->close();
         }
     }
 
@@ -24,21 +27,44 @@ namespace MyLogger {
 
         std::lock_guard lock(mutex_);
 
-        fileName_ = fileName;
         defaultMessageLevel_ = defaultMessageLevel;
+        output_ = std::make_unique<FileLogOutput>(fileName);
 
-        logFile_.open(fileName,std::ios::app);
-        if (!logFile_.is_open()) {
+        LogResult result = output_->init();
+        if (result != LogResult::SUCCESS) {
             initialized_ = false;
-            return LogResult::FILE_OPEN_ERROR;
+            output_.reset();
+            return result;
         }
 
         initialized_ = true;
         return LogResult::SUCCESS;
     }
 
+    LogResult Logger::initSocket(const std::string& host, int port, LogLevel defaultMessageLevel) {
+        if (!isValidLogLevel(defaultMessageLevel)) {
+            return LogResult::INVALID_LEVEL;
+        }
+
+        std::lock_guard lock(mutex_);
+
+        defaultMessageLevel_ = defaultMessageLevel;
+        output_ = std::make_unique<SocketLogOutput>(host, port);
+
+        LogResult result = output_->init();
+        if (result != LogResult::SUCCESS) {
+            initialized_ = false;
+            output_.reset();
+            return result;
+        }
+
+        initialized_ = true;
+        return LogResult::SUCCESS;
+    }
+
+
     LogResult Logger::log(const std::string& message, LogLevel level) {
-        if (!initialized_) {
+        if (!initialized_ || !output_) {
             return LogResult::FILE_OPEN_ERROR;
         }
 
@@ -50,18 +76,8 @@ namespace MyLogger {
             return LogResult::SUCCESS;
         }
 
-        if (!logFile_.is_open()) {
-            return LogResult::FILE_OPEN_ERROR;
-        }
-
-        logFile_ << getCurrentTime() << " [" << logLevelToString(level) << "] " << message << '\n';
-
-        if (logFile_.fail()) {
-            return LogResult::WRITE_ERROR;
-        }
-
-        logFile_.flush();
-        return LogResult::SUCCESS;
+        std::string formattedMessage = getCurrentTime() + " [" + logLevelToString(level) + "] " + message;
+        return output_->write(formattedMessage);
     }
 
     void Logger::setLogLevel(LogLevel level) {

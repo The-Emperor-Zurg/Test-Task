@@ -21,8 +21,12 @@ add_library(mylogger_shared SHARED ${SOURCES} ${HEADERS})
 target_include_directories(mylogger_shared PUBLIC include)
 set_target_properties(mylogger_shared PROPERTIES OUTPUT_NAME "mylogger")
 
+# Windows-specific configuration
 if(WIN32)
     target_compile_definitions(mylogger_shared PRIVATE MYLOGGER_EXPORTS MYLOGGER_SHARED)
+    # Link with Winsock library for socket functionality
+    target_link_libraries(mylogger_static ws2_32)
+    target_link_libraries(mylogger_shared ws2_32)
 endif()
 
 # Tests

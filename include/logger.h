@@ -2,7 +2,10 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 #include <mutex>
+
+#include "ilog_output.h"
 
 #ifdef WIN32
     #ifdef MYLOGGER_SHARED
@@ -26,19 +29,13 @@ namespace MyLogger {
         TOP_SECRET_INFO = 2,
     };
 
-    enum class LogResult {
-        SUCCESS = 0,
-        FILE_OPEN_ERROR = 1,
-        WRITE_ERROR = 2,
-        INVALID_LEVEL = 3
-    };
-
     class MYLOGGER_API Logger {
     public:
         Logger();
         ~Logger();
 
         LogResult init(const std::string& fileName, LogLevel defaultMessageLevel);
+        LogResult initSocket(const std::string& host, int port, LogLevel defaultMessageLevel);
         LogResult log(const std::string& message, LogLevel level = LogLevel::INFO);
         void setLogLevel(LogLevel level);
 
@@ -46,9 +43,8 @@ namespace MyLogger {
         bool isInitialized() const;
 
     private:
-        std::string fileName_;
         LogLevel defaultMessageLevel_;
-        std::ofstream logFile_;
+        std::unique_ptr<ILogOutput> output_;
         std::mutex mutex_;
         bool initialized_;
 

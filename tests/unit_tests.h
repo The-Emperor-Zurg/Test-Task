@@ -11,3 +11,10 @@ bool testSetLogLevel();
 bool testLogMessage();
 bool testLogLevelFilter();
 bool testErrorHandling();
+
+bool testSocketLoggerConnectionError();
+bool testSocketLoggerInitialization();
+bool testSocketLoggerInvalidHost();
+bool testSocketLoggerInvalidPort();
+bool testSocketLoggerUninitialized();
+bool testSocketLoggerSetLevel();
