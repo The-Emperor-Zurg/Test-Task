@@ -26,7 +26,7 @@ namespace LoggerApp {
         std::queue<Message> message_queue_;
         std::mutex queueMutex_;
         std::condition_variable queueCondition_;
-        std::atomic<bool> shouldStop_;
+        std::atomic<bool> shouldStop_{};
         std::thread workerThread_;
     };
 }
