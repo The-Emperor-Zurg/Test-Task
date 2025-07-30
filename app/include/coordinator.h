@@ -16,7 +16,7 @@ namespace LoggerApp {
 
         bool init();
         bool run();
-        bool shutdown();
+        void shutdown();
 
     private:
         void printUsage() const;
@@ -26,6 +26,6 @@ namespace LoggerApp {
         std::unique_ptr<ILogWorker> logWorker_;
         std::unique_ptr<IInputHandler> inputHandler_;
         std::shared_ptr<MyLogger::Logger> logger_;
-        bool isInitialized_;
+        bool isInitialized_{};
     };
 }
