@@ -37,7 +37,7 @@ namespace MyLogger {
         LogResult init(const std::string& fileName, LogLevel defaultMessageLevel);
         LogResult initSocket(const std::string& host, int port, LogLevel defaultMessageLevel);
         LogResult log(const std::string& message, LogLevel level = LogLevel::INFO);
-        void setLogLevel(LogLevel level);
+        LogResult setLogLevel(LogLevel level);
 
         LogLevel getLogLevel() const;
         bool isInitialized() const;

@@ -18,3 +18,4 @@ bool testSocketLoggerInvalidHost();
 bool testSocketLoggerInvalidPort();
 bool testSocketLoggerUninitialized();
 bool testSocketLoggerSetLevel();
+bool testSetLogLevelNotInitialized();

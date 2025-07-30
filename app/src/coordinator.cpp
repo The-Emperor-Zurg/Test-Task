@@ -85,21 +85,36 @@ namespace LoggerApp {
             }
 
             if (message.isLevelChangeMessage) {
-                logger_->setLogLevel(message.level);
-                defaultLevel_ = message.level;
-                std::cout << "Default log level changed to: ";
-                switch (message.level) {
-                    case MyLogger::LogLevel::INFO:
-                        std::cout << "INFO";
-                        break;
-                    case MyLogger::LogLevel::SECRET_INFO:
-                        std::cout << "SECRET_INFO";
-                        break;
-                    case MyLogger::LogLevel::TOP_SECRET_INFO:
-                        std::cout << "TOP_SECRET_INFO";
-                        break;
+                MyLogger::LogResult result = logger_->setLogLevel(message.level);
+                if (result == MyLogger::LogResult::SUCCESS) {
+                    defaultLevel_ = message.level;
+                    std::cout << "Default log level changed to: ";
+                    switch (message.level) {
+                        case MyLogger::LogLevel::INFO:
+                            std::cout << "INFO";
+                            break;
+                        case MyLogger::LogLevel::SECRET_INFO:
+                            std::cout << "SECRET_INFO";
+                            break;
+                        case MyLogger::LogLevel::TOP_SECRET_INFO:
+                            std::cout << "TOP_SECRET_INFO";
+                            break;
+                    }
+                    std::cout << "\n";
+                } else {
+                    std::cerr << "Failed to change log level: ";
+                    switch (result) {
+                        case MyLogger::LogResult::NOT_INITIALIZED:
+                            std::cerr << "Logger not initialized";
+                            break;
+                        case MyLogger::LogResult::INVALID_LEVEL:
+                            std::cerr << "Invalid level";
+                            break;
+                        default:
+                            std::cerr << "Unknown error";
+                    }
+                    std::cerr << "\n";
                 }
-                std::cout << "\n";
                 continue;
             }
 

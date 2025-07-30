@@ -80,13 +80,18 @@ namespace MyLogger {
         return output_->write(formattedMessage);
     }
 
-    void Logger::setLogLevel(LogLevel level) {
+    LogResult Logger::setLogLevel(LogLevel level) {
         if (!isValidLogLevel(level)) {
-            return;
+            return LogResult::INVALID_LEVEL;
+        }
+
+        if (!initialized_) {
+            return LogResult::NOT_INITIALIZED;
         }
 
         std::lock_guard lock(mutex_);
         defaultMessageLevel_ = level;
+        return LogResult::SUCCESS;
     }
 
     LogLevel Logger::getLogLevel() const {

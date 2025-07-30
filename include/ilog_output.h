@@ -25,6 +25,7 @@ namespace MyLogger {
         INVALID_LEVEL = 3,
         SOCKET_CONNECTION_ERROR = 4,
         SOCKET_SEND_ERROR = 5,
+        NOT_INITIALIZED = 6,
     };
 
     class MYLOGGER_API ILogOutput {

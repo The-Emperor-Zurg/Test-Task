@@ -37,7 +37,8 @@ int runAllTests() {
     runTest("Socket Logger Initialization", testSocketLoggerInitialization, totalTests, passedTests);
     runTest("Socket Logger Invalid Host", testSocketLoggerInvalidHost, totalTests, passedTests);
     runTest("Socket Logger Invalid Port", testSocketLoggerInvalidPort, totalTests, passedTests);
-    runTest("Socket Logger Set Level", testSocketLoggerSetLevel, totalTests, passedTests);
+    runTest("Socket Logger Set Level (NOT_INITIALIZED)", testSocketLoggerSetLevel, totalTests, passedTests);
+    runTest("Set Level NOT_INITIALIZED Test", testSetLogLevelNotInitialized, totalTests, passedTests);
 
     // Выводим результат
     std::cout << "\n ---Test Results ---\n";
@@ -90,13 +91,13 @@ bool testSetLogLevel() {
         logger.init("test_level.log", MyLogger::LogLevel::INFO);
 
         // Тест смены дефолтного уровня
-        logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
-        if (logger.getLogLevel() != MyLogger::LogLevel::TOP_SECRET_INFO) {
+        MyLogger::LogResult result = logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
+        if (result != MyLogger::LogResult::SUCCESS || logger.getLogLevel() != MyLogger::LogLevel::TOP_SECRET_INFO) {
             return false;
         }
 
-        logger.setLogLevel(MyLogger::LogLevel::SECRET_INFO);
-        if (logger.getLogLevel() != MyLogger::LogLevel::SECRET_INFO) {
+        result = logger.setLogLevel(MyLogger::LogLevel::SECRET_INFO);
+        if (result != MyLogger::LogResult::SUCCESS || logger.getLogLevel() != MyLogger::LogLevel::SECRET_INFO) {
             return false;
         }
     } // Делаем в скопе, чтобы логгер уничтожался и файл закрывался
@@ -212,6 +213,7 @@ bool testSocketLoggerInitialization() {
         return false;
     }
 
+    // некорректный logger
     MyLogger::LogResult result = logger.initSocket("127.0.0.1", 9999, static_cast<MyLogger::LogLevel>(777));
     if (result != MyLogger::LogResult::INVALID_LEVEL) {
         return false;
@@ -224,9 +226,11 @@ bool testSocketLoggerInitialization() {
     return true;
 }
 
+
 bool testSocketLoggerInvalidHost() {
     MyLogger::Logger logger;
 
+    // некорректный хост
     MyLogger::LogResult result = logger.initSocket("", 9999, MyLogger::LogLevel::INFO);
     return result == MyLogger::LogResult::SOCKET_CONNECTION_ERROR && !logger.isInitialized();
 }
@@ -248,11 +252,35 @@ bool testSocketLoggerUninitialized() {
 bool testSocketLoggerSetLevel() {
     MyLogger::Logger logger;
 
-    MyLogger::LogResult result = logger.initSocket("127.0.0.1", 65432, MyLogger::LogLevel::INFO);
-    if (result != MyLogger::LogResult::SUCCESS) {
+    // Тестируем setLogLevel на неинициализированном логгере
+    MyLogger::LogResult result = logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
+    if (result != MyLogger::LogResult::NOT_INITIALIZED) {
         return false;
     }
 
-    logger.setLogLevel(MyLogger::LogLevel::TOP_SECRET_INFO);
-    return logger.getLogLevel() == MyLogger::LogLevel::TOP_SECRET_INFO;
+    // Тестируем невалидный уровень на неинициализированном логгере
+    result = logger.setLogLevel(static_cast<MyLogger::LogLevel>(777));
+    if (result != MyLogger::LogResult::INVALID_LEVEL) {
+        return false;
+    }
+
+    return true;
+}
+
+bool testSetLogLevelNotInitialized() {
+    MyLogger::Logger logger;
+
+    // Тестируем setLogLevel на неинициализированном логгере
+    MyLogger::LogResult result = logger.setLogLevel(MyLogger::LogLevel::INFO);
+    if (result != MyLogger::LogResult::NOT_INITIALIZED) {
+        return false;
+    }
+
+    // Тестируем невалидный уровень
+    result = logger.setLogLevel(static_cast<MyLogger::LogLevel>(999));
+    if (result != MyLogger::LogResult::INVALID_LEVEL) {
+        return false;
+    }
+
+    return true;
 }
