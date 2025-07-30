@@ -84,6 +84,25 @@ namespace LoggerApp {
                 break;
             }
 
+            if (message.isLevelChangeMessage) {
+                logger_->setLogLevel(message.level);
+                defaultLevel_ = message.level;
+                std::cout << "Default log level changed to: ";
+                switch (message.level) {
+                    case MyLogger::LogLevel::INFO:
+                        std::cout << "INFO";
+                        break;
+                    case MyLogger::LogLevel::SECRET_INFO:
+                        std::cout << "SECRET_INFO";
+                        break;
+                    case MyLogger::LogLevel::TOP_SECRET_INFO:
+                        std::cout << "TOP_SECRET_INFO";
+                        break;
+                }
+                std::cout << "\n";
+                continue;
+            }
+
             logWorker_->pushMessage(message);
         }
     }
@@ -116,11 +135,14 @@ namespace LoggerApp {
         }
 
         std::cout << '\n';
+        std::cout << "Commands:\n";
+        std::cout << "  -l              - Change default log level (INFO, SECRET_INFO, TOP_SECRET_INFO)\n";
+        std::cout << "  exit/quit/q     - Terminate the application\n";
         std::cout << "Examples:\n";
-        std::cout << "Hello, world!\n";
-        std::cout << "I'm Achilles, son of Peleus SECRET_INFO\n";
-        std::cout << "I am Maximus Decius Meridius TOP_SECRET_INFO\n";
-        std::cout << "Type 'exit', 'quit' or 'q' to terminate\n";
+        std::cout << "  Hello, world!                           (uses default level)\n";
+        std::cout << "  I'm Achilles, son of Peleus SECRET_INFO (uses SECRET_INFO level)\n";
+        std::cout << "  -l TOP_SECRET_INFO                      (changes default to TOP_SECRET_INFO)\n";
+        std::cout << "  Now all messages use TOP_SECRET_INFO    (uses new default)\n";
         std::cout << "---------------\n";
     }
 }
