@@ -1,27 +1,33 @@
 # MyLogger
 
-MyLogger - это кроссплатформенная библиотека логирования для C++, поддерживающая многоуровневое логирование с потокобезопасностью. Библиотека работает как на Windows, так и на Linux системах.
+MyLogger - это кроссплатформенная библиотека логирования для C++, поддерживающая многоуровневое логирование с потокобезопасностью. Библиотека работает как на Windows, так и на Linux системах и поддерживает вывод логов как в файлы, так и через TCP socket соединения.
 
 ## Особенности
 
 - **Кроссплатформенность**: Поддержка Windows и Linux
 - **Многоуровневое логирование**: INFO, SECRET_INFO, TOP_SECRET_INFO
-- **Потокобезопасность**: Использование мьютексов для защиты от гонки потоков
+- **Потокобезопасность**: Использование мьютексов
+- **Модульная архитектура**: Поддержка различных выходов (файл, TCP socket)
 - **Гибкая сборка**: Поддержка статической и динамической линковки
-- **API экспорт**: Корректный экспорт DLL на Windows
+- **API экспорт**: Экспорт DLL на Windows
 
 ## Структура проекта
 
 ```
 MyLogger/
 ├── include/           # Заголовочные файлы библиотеки
-│   └── logger.h
+│   ├── logger.h
+│   ├── ilog_output.h      # Интерфейс для вывода логов
+│   ├── file_log_output.h   # Реализация вывода в файл
+│   └── socket_log_output.h # Реализация вывода через TCP socket
 ├── src/              # Исходный код библиотеки
-│   └── logger.cpp
+│   ├── logger.cpp
+│   ├── file_log_output.cpp
+│   └── socket_log_output.cpp
 ├── app/              # Тестовое приложение
 │   ├── include/      # Заголовки приложения
 │   └── src/          # Исходники приложения
-├── tests/            # Модульные тесты
+├── tests/            # Модульные тесты (включая socket тесты)
 └── CMakeLists.txt    # Конфигурация сборки
 ```
 
@@ -45,12 +51,13 @@ cmake -DBUILD_TESTS=OFF -DBUILD_APP=ON ..
 
 ## Использование библиотеки
 
+### Логирование в файл
 
 ```cpp
 Logger logger;
 
 // Инициализация с файлом и уровнем по умолчанию
-LogResult result = logger.init("app", LogLevel::INFO);
+LogResult result = logger.init("app.log", LogLevel::INFO);
 if (result != LogResult::SUCCESS) {
     // Обработка ошибки
 }
@@ -62,6 +69,22 @@ logger.log("Совершенно секретно", LogLevel::TOP_SECRET_INFO);
 
 // Изменение уровня логирования
 logger.setLogLevel(LogLevel::SECRET_INFO);
+```
+
+### Логирование через TCP Socket
+
+```cpp
+Logger logger;
+
+// Инициализация с TCP socket подключением
+LogResult result = logger.initSocket("127.0.0.1", 9999, LogLevel::INFO);
+if (result != LogResult::SUCCESS) {
+    // Обработка ошибки подключения
+}
+
+// Логирование в сокет
+logger.log("Сообщение через socket", LogLevel::INFO);
+logger.log("Секретная информация", LogLevel::SECRET_INFO);
 ```
 
 ### Уровни логирования
@@ -122,9 +145,10 @@ logger_app.exe logs.log [уровень]
 
 #### Методы
 
-- `LogResult init(const std::string& fileName, LogLevel defaultLevel)` - Инициализация логгера
+- `LogResult init(const std::string& fileName, LogLevel defaultLevel)` - Инициализация логгера с файлом
+- `LogResult initSocket(const std::string& host, int port, LogLevel defaultLevel)` - Инициализация логгера с TCP socket
 - `LogResult log(const std::string& message, LogLevel level = LogLevel::INFO)` - Запись сообщения
-- `void setLogLevel(LogLevel level)` - Установка уровня логирования
+- `LogResult setLogLevel(LogLevel level)` - Установка уровня логирования
 - `LogLevel getLogLevel() const` - Получение текущего уровня
 - `bool isInitialized() const` - Проверка инициализации
 
@@ -134,3 +158,24 @@ logger_app.exe logs.log [уровень]
 - `FILE_OPEN_ERROR` - Ошибка открытия файла
 - `WRITE_ERROR` - Ошибка записи в файл
 - `INVALID_LEVEL` - Некорректный уровень логирования
+- `SOCKET_CONNECTION_ERROR` - Ошибка подключения к socket серверу
+- `SOCKET_SEND_ERROR` - Ошибка отправки данных через socket
+- `NOT_INITIALIZED` - Логгер не инициализирован
+
+## Тестирование
+
+Проект включает расширенный набор модульных тестов, покрывающих:
+
+### Базовая функциональность
+- Инициализация логгера
+- Установка уровня логирования  
+- Запись сообщений
+- Фильтрация по уровням
+- Обработка ошибок
+
+### Socket функциональность
+- Инициализация socket логгера
+- Тестирование подключения к серверу
+- Обработка ошибок подключения
+- Тестирование с некорректными параметрами (хост, порт)
+- Проверка состояния неинициализированного socket логгера
